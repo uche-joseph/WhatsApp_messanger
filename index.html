@@ -6,7 +6,7 @@
     <title>WhatsApp Message Sender</title>
     <style>
         body {
-            font-family:Tahoma,Arial,sans-serif;
+            font-family: Tahoma, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -23,14 +23,13 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width:100%;
+            max-width: 100%;
         }
         label {
             margin: 10px 0;
             font-weight: bold;
         }
-        select,
-        #phoneNumber  {
+        input {
             display: block;
             width: 100%;
             padding: 10px;
@@ -41,11 +40,6 @@
             max-width: 100%;
             outline: none;
         }
-       
-       #phoneNumber {
-            max-width: 93%;
-       }
-       
         button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -64,60 +58,37 @@
 <body>
     <div class="container">
         <h1>WhatsApp Message Sender</h1>
-        <label for="countryCode">Country Code:</label>
-        <select id="countryCode"></select>
         
-        <label for="phoneNumber">Phone Number:</label>
-        <input type="text" id="phoneNumber">
+        <label for="phoneNumber">Enter Phone Number:</label>
+        <input type="text" id="phoneNumber" placeholder="e.g., +123456789 or 123456789">
         
         <button onclick="sendMessage()">Send Message</button>
     </div>
 
     <script>
-        async function populateCountryCodes() {
-            try {
-                const response = await fetch('https://restcountries.com/v3.1/all');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const countries = await response.json();
-                const countryCodeSelect = document.getElementById('countryCode');
-
-                const sortedCountries = countries.sort((a, b) => {
-                    return a.name.common.localeCompare(b.name.common);
-                });
-
-                sortedCountries.forEach(country => {
-                    if (country.idd && country.idd.root && country.idd.suffixes) {
-                        country.idd.suffixes.forEach(suffix => {
-                            const option = document.createElement('option');
-                            option.value = country.idd.root + suffix;
-                            option.textContent = `${country.name.common} (${country.idd.root}${suffix})`;
-                            countryCodeSelect.appendChild(option);
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to fetch country codes:', error);
-            }
-        }
-
-        function createWhatsAppLink(countryCode, phoneNumber, message) {
+        function createWhatsAppLink(phoneNumber, message) {
             const baseUrl = "https://api.whatsapp.com/send";
-            const phone = `${countryCode}${phoneNumber}`;
-            const url = `${baseUrl}?phone=${phone}&text=${encodeURIComponent(message)}`;
+            
+            // Ensure phone number is properly formatted
+            const formattedPhoneNumber = phoneNumber.replace(/\D/g, ''); // Remove non-numeric characters
+            const url = `${baseUrl}?phone=${formattedPhoneNumber}&text=${encodeURIComponent(message)}`;
             return url;
         }
 
         function sendMessage() {
-            const countryCodeInput = document.getElementById("countryCode").value;
-            const phoneNumberInput = document.getElementById("phoneNumber").value;
+            const phoneNumberInput = document.getElementById("phoneNumber").value.trim();
+            
+            if (!phoneNumberInput) {
+                alert("Please enter a phone number.");
+                return;
+            }
+
             const message = ""; // Empty message
-            const link = createWhatsAppLink(countryCodeInput, phoneNumberInput, message);
+            const link = createWhatsAppLink(phoneNumberInput, message);
+
+            // Open the WhatsApp link in a new tab
             window.open(link, '_blank');
         }
-
-        document.addEventListener('DOMContentLoaded', populateCountryCodes);
     </script>
 </body>
 </html>
