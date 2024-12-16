@@ -59,35 +59,54 @@
     <div class="container">
         <h1>WhatsApp Message Sender</h1>
         
-        <label for="phoneNumber">Enter Phone Number:</label>
-        <input type="text" id="phoneNumber" placeholder="e.g., +123456789 or 123456789">
+        <label for="countryCode">Country Code:</label>
+        <input type="text" id="countryCode" placeholder="e.g., 1 (for US)" value="1">
+        
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" placeholder="e.g., 2345678900">
         
         <button onclick="sendMessage()">Send Message</button>
     </div>
 
     <script>
-        function createWhatsAppLink(phoneNumber, message) {
-            const baseUrl = "https://api.whatsapp.com/send";
+        function sanitizePhoneNumber(countryCode, phoneNumber) {
+            // Remove all non-digit characters from both inputs
+            const cleanCountryCode = countryCode.replace(/\D/g, '');
+            const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
             
-            // Ensure phone number is properly formatted
-            const formattedPhoneNumber = phoneNumber.replace(/\D/g, ''); // Remove non-numeric characters
-            const url = `${baseUrl}?phone=${formattedPhoneNumber}&text=${encodeURIComponent(message)}`;
-            return url;
+            // Combine country code and phone number
+            return `+${cleanCountryCode}${cleanPhoneNumber}`;
+        }
+
+        function createWhatsAppLink(phoneNumber) {
+            // Use wa.me domain for more reliable WhatsApp link
+            const baseUrl = "https://wa.me";
+            
+            return `${baseUrl}/${phoneNumber}`;
         }
 
         function sendMessage() {
+            const countryCodeInput = document.getElementById("countryCode").value.trim();
             const phoneNumberInput = document.getElementById("phoneNumber").value.trim();
+            
+            if (!countryCodeInput) {
+                alert("Please enter a country code.");
+                return;
+            }
             
             if (!phoneNumberInput) {
                 alert("Please enter a phone number.");
                 return;
             }
 
-            const message = ""; // Empty message
-            const link = createWhatsAppLink(phoneNumberInput, message);
-
-            // Open the WhatsApp link in a new tab
-            window.open(link, '_blank');
+            try {
+                const formattedPhoneNumber = sanitizePhoneNumber(countryCodeInput, phoneNumberInput);
+                const link = createWhatsAppLink(formattedPhoneNumber);
+                window.open(link, '_blank');
+            } catch (error) {
+                alert("Invalid phone number. Please check your input.");
+                console.error(error);
+            }
         }
     </script>
 </body>
